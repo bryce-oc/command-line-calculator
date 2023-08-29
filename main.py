@@ -3,10 +3,10 @@ from calc import *
 ## TODO: add in command line interface
 
 def main():
-	calcStr = "0"
+	calcStr = input("> ")
 	while calcStr != "":
-		calcStr = input("> ")
 		print(calculateExpressionSafe(calcStr))
+		calcStr = input("> ")
 
 if __name__ == '__main__':
 	main()
