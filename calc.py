@@ -100,19 +100,21 @@ def getEarliestOperator(calcStr, operator1, operator2):
 
 def getPrevAndNextNumIndices(calcStr, operatorIndex):
 	prevNumStartIndex = operatorIndex - 1
-	while prevNumStartIndex >= 0:
+	foundStart = False
+	while prevNumStartIndex >= 0 and not foundStart:
 		if not (calcStr[prevNumStartIndex].isnumeric() or calcStr[prevNumStartIndex] == "."):
-			break
-
-		prevNumStartIndex -= 1
+			foundStart = True
+		else:
+			prevNumStartIndex -= 1
 	prevNumStartIndex += 1
 
 	nextNumEndIndex = operatorIndex + 1
-	while nextNumEndIndex < len(calcStr):
+	foundEnd = False
+	while nextNumEndIndex < len(calcStr) and not foundEnd:
 		if not (calcStr[nextNumEndIndex].isnumeric() or calcStr[nextNumEndIndex] == "."):
-			break
-
-		nextNumEndIndex += 1
+			foundEnd = True
+		else:
+			nextNumEndIndex += 1
 	nextNumEndIndex -= 1
 
 	return (prevNumStartIndex, nextNumEndIndex)
