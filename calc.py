@@ -27,7 +27,12 @@ def calculateExpression(calcStr):
 		currCalcStr = currCalcStr[:startIndex] + bracketsResult + currCalcStr[endIndex + 1:]
 
 	# now that brackets are removed, parse remaining expression
-	return calculateDebracketedExpression(currCalcStr)
+	currCalcStr = calculateDebracketedExpression(currCalcStr)
+	if len(currCalcStr) > 0:
+		if currCalcStr[0] == "n":
+			return "-" + currCalcStr[1:]
+			
+	return currCalcStr
 
 def calculateDebracketedExpression(calcStr):
 	currCalcStr = calcStr[:]
@@ -38,10 +43,10 @@ def calculateDebracketedExpression(calcStr):
 	powerIndex = currCalcStr.find("^")
 	while powerIndex != -1:
 		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, powerIndex)
-		prevNum = int(currCalcStr[prevNumStartIndex:powerIndex])
-		nextNum = int(currCalcStr[powerIndex + 1:nextNumEndIndex + 1])
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:powerIndex])
+		nextNum = convertStrToNum(currCalcStr[powerIndex + 1:nextNumEndIndex + 1])
 		calculatedExpression = prevNum ** nextNum
-		currCalcStr = currCalcStr[:prevNumStartIndex] + str(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
+		currCalcStr = currCalcStr[:prevNumStartIndex] + convertNumToStr(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
 		powerIndex = currCalcStr.find("^")
 
@@ -50,15 +55,15 @@ def calculateDebracketedExpression(calcStr):
 
 	while multDivIndex != -1:
 		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, multDivIndex)
-		prevNum = int(currCalcStr[prevNumStartIndex:multDivIndex])
-		nextNum = int(currCalcStr[multDivIndex + 1:nextNumEndIndex + 1])
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:multDivIndex])
+		nextNum = convertStrToNum(currCalcStr[multDivIndex + 1:nextNumEndIndex + 1])
 
 		if currCalcStr[multDivIndex] == "*": 
 			calculatedExpression = prevNum * nextNum
 		else:
 			calculatedExpression = prevNum // nextNum
 
-		currCalcStr = currCalcStr[:prevNumStartIndex] + str(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
+		currCalcStr = currCalcStr[:prevNumStartIndex] + convertNumToStr(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
 		multDivIndex = getEarliestOperator(currCalcStr, "*", "/")
 
@@ -67,15 +72,15 @@ def calculateDebracketedExpression(calcStr):
 
 	while addSubIndex != -1:
 		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, addSubIndex)
-		prevNum = int(currCalcStr[prevNumStartIndex:addSubIndex])
-		nextNum = int(currCalcStr[addSubIndex + 1:nextNumEndIndex + 1])
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:addSubIndex])
+		nextNum = convertStrToNum(currCalcStr[addSubIndex + 1:nextNumEndIndex + 1])
 
 		if currCalcStr[addSubIndex] == "+": 
 			calculatedExpression = prevNum + nextNum
 		else:
 			calculatedExpression = prevNum - nextNum
 
-		currCalcStr = currCalcStr[:prevNumStartIndex] + str(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
+		currCalcStr = currCalcStr[:prevNumStartIndex] + convertNumToStr(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
 		addSubIndex = getEarliestOperator(currCalcStr, "+", "-")
 
@@ -102,7 +107,7 @@ def getPrevAndNextNumIndices(calcStr, operatorIndex):
 	prevNumStartIndex = operatorIndex - 1
 	foundStart = False
 	while prevNumStartIndex >= 0 and not foundStart:
-		if not (calcStr[prevNumStartIndex].isnumeric() or calcStr[prevNumStartIndex] == "."):
+		if not (calcStr[prevNumStartIndex].isnumeric() or calcStr[prevNumStartIndex] == "." or calcStr[prevNumStartIndex] == "n"):
 			foundStart = True
 		else:
 			prevNumStartIndex -= 1
@@ -111,10 +116,22 @@ def getPrevAndNextNumIndices(calcStr, operatorIndex):
 	nextNumEndIndex = operatorIndex + 1
 	foundEnd = False
 	while nextNumEndIndex < len(calcStr) and not foundEnd:
-		if not (calcStr[nextNumEndIndex].isnumeric() or calcStr[nextNumEndIndex] == "."):
+		if not (calcStr[nextNumEndIndex].isnumeric() or calcStr[nextNumEndIndex] == "." or calcStr[nextNumEndIndex] == "n"):
 			foundEnd = True
 		else:
 			nextNumEndIndex += 1
 	nextNumEndIndex -= 1
 
 	return (prevNumStartIndex, nextNumEndIndex)
+
+def convertNumToStr(num):
+	if num >= 0:
+		return str(num)
+	else:
+		return "n" + str(num * (-1))
+
+def convertStrToNum(string):
+	if string[0] == "n":
+		return int(string[1:]) * (-1)
+	else:
+		return int(string)
