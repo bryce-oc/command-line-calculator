@@ -1,6 +1,8 @@
-def calculateExpressionSafe(calcStr):
+from math import floor
+
+def calculateExpressionSafe(calcStr, preciseMode=True):
 	if checkValid(calcStr):
-		return calculateExpression(calcStr)
+		return calculateExpression(calcStr, preciseMode)
 	else:
 		return "Expression invalid."
 
@@ -8,14 +10,14 @@ def checkValid(calcStr):
 	# TODO: implement checking
 	return True
 
-def calculateExpression(calcStr):
+def calculateExpression(calcStr, preciseMode):
 	# following BIMDAS ordering, parse bracketed expressions first
 	currCalcStr = calcStr[:]
 	while "(" in currCalcStr:
 		startIndex = 0
 		endIndex = 0
 		i = 0
-		while i < len(calcStr):
+		while i < len(currCalcStr):
 			if currCalcStr[i] == "(":
 				startIndex = i
 			elif currCalcStr[i] == ")":
@@ -23,18 +25,21 @@ def calculateExpression(calcStr):
 				break
 			i += 1
 		insideBrackets = currCalcStr[startIndex + 1:endIndex]
-		bracketsResult = calculateDebracketedExpression(insideBrackets)
+		bracketsResult = calculateDebracketedExpression(insideBrackets, preciseMode)
+		#print(insideBrackets, "\t\t", bracketsResult)
 		currCalcStr = currCalcStr[:startIndex] + bracketsResult + currCalcStr[endIndex + 1:]
 
+	print("all brackets removed", flush=True)
+
 	# now that brackets are removed, parse remaining expression
-	currCalcStr = calculateDebracketedExpression(currCalcStr)
+	currCalcStr = calculateDebracketedExpression(currCalcStr, preciseMode)
 	if len(currCalcStr) > 0:
 		if currCalcStr[0] == "n":
 			return "-" + currCalcStr[1:]
-			
+
 	return currCalcStr
 
-def calculateDebracketedExpression(calcStr):
+def calculateDebracketedExpression(calcStr, preciseMode):
 	currCalcStr = calcStr[:]
 
 	# following BIMDAS ordering, without brackets:
@@ -42,10 +47,15 @@ def calculateDebracketedExpression(calcStr):
 	# indices
 	powerIndex = currCalcStr.find("^")
 	while powerIndex != -1:
-		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, powerIndex)
-		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:powerIndex])
-		nextNum = convertStrToNum(currCalcStr[powerIndex + 1:nextNumEndIndex + 1])
-		calculatedExpression = prevNum ** nextNum
+		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, powerIndex, preciseMode)
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:powerIndex], preciseMode)
+		nextNum = convertStrToNum(currCalcStr[powerIndex + 1:nextNumEndIndex + 1], preciseMode)
+		
+		if preciseMode:
+			calculatedExpression = floor(prevNum ** nextNum)
+		else:
+			calculatedExpression = prevNum ** nextNum
+
 		currCalcStr = currCalcStr[:prevNumStartIndex] + convertNumToStr(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
 		powerIndex = currCalcStr.find("^")
@@ -54,14 +64,17 @@ def calculateDebracketedExpression(calcStr):
 	multDivIndex = getEarliestOperator(currCalcStr, "*", "/")
 
 	while multDivIndex != -1:
-		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, multDivIndex)
-		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:multDivIndex])
-		nextNum = convertStrToNum(currCalcStr[multDivIndex + 1:nextNumEndIndex + 1])
+		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, multDivIndex, preciseMode)
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:multDivIndex], preciseMode)
+		nextNum = convertStrToNum(currCalcStr[multDivIndex + 1:nextNumEndIndex + 1], preciseMode)
 
 		if currCalcStr[multDivIndex] == "*": 
 			calculatedExpression = prevNum * nextNum
 		else:
-			calculatedExpression = prevNum // nextNum
+			if preciseMode:
+				calculatedExpression = prevNum // nextNum
+			else:
+				calculatedExpression = prevNum / nextNum
 
 		currCalcStr = currCalcStr[:prevNumStartIndex] + convertNumToStr(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
@@ -71,9 +84,9 @@ def calculateDebracketedExpression(calcStr):
 	addSubIndex = getEarliestOperator(currCalcStr, "+", "-")
 
 	while addSubIndex != -1:
-		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, addSubIndex)
-		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:addSubIndex])
-		nextNum = convertStrToNum(currCalcStr[addSubIndex + 1:nextNumEndIndex + 1])
+		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, addSubIndex, preciseMode)
+		prevNum = convertStrToNum(currCalcStr[prevNumStartIndex:addSubIndex], preciseMode)
+		nextNum = convertStrToNum(currCalcStr[addSubIndex + 1:nextNumEndIndex + 1], preciseMode)
 
 		if currCalcStr[addSubIndex] == "+": 
 			calculatedExpression = prevNum + nextNum
@@ -103,11 +116,11 @@ def getEarliestOperator(calcStr, operator1, operator2):
 
 	return bothOpsIndex
 
-def getPrevAndNextNumIndices(calcStr, operatorIndex):
+def getPrevAndNextNumIndices(calcStr, operatorIndex, preciseMode):
 	prevNumStartIndex = operatorIndex - 1
 	foundStart = False
 	while prevNumStartIndex >= 0 and not foundStart:
-		if not (calcStr[prevNumStartIndex].isnumeric() or calcStr[prevNumStartIndex] == "." or calcStr[prevNumStartIndex] == "n"):
+		if not (calcStr[prevNumStartIndex].isnumeric() or calcStr[prevNumStartIndex] == "n" or (calcStr[prevNumStartIndex] == "." and not preciseMode)):
 			foundStart = True
 		else:
 			prevNumStartIndex -= 1
@@ -116,11 +129,15 @@ def getPrevAndNextNumIndices(calcStr, operatorIndex):
 	nextNumEndIndex = operatorIndex + 1
 	foundEnd = False
 	while nextNumEndIndex < len(calcStr) and not foundEnd:
-		if not (calcStr[nextNumEndIndex].isnumeric() or calcStr[nextNumEndIndex] == "." or calcStr[nextNumEndIndex] == "n"):
+		if not (calcStr[nextNumEndIndex].isnumeric() or calcStr[nextNumEndIndex] == "n" or (calcStr[nextNumEndIndex] == "." and not preciseMode)):
 			foundEnd = True
 		else:
 			nextNumEndIndex += 1
 	nextNumEndIndex -= 1
+
+	print(prevNumStartIndex, nextNumEndIndex)
+	print(calcStr)
+	print(calcStr[prevNumStartIndex:nextNumEndIndex+1])
 
 	return (prevNumStartIndex, nextNumEndIndex)
 
@@ -130,8 +147,14 @@ def convertNumToStr(num):
 	else:
 		return "n" + str(num * (-1))
 
-def convertStrToNum(string):
-	if string[0] == "n":
-		return int(string[1:]) * (-1)
+def convertStrToNum(string, preciseMode):
+	if preciseMode:
+		if string[0] == "n":
+			return int(string[1:]) * (-1)
+		else:
+			return int(string)
 	else:
-		return int(string)
+		if string[0] == "n":
+			return float(string[1:]) * (-1)
+		else:
+			return float(string) 
