@@ -46,15 +46,7 @@ def calculateDebracketedExpression(calcStr):
 		powerIndex = currCalcStr.find("^")
 
 	# multiplication and division
-	multDivIndex = -1
-	multIndex = currCalcStr.find("*")
-	divIndex = currCalcStr.find("/")
-	if multIndex == -1:
-		multDivIndex = divIndex
-	elif divIndex == -1:
-		multDivIndex = multIndex
-	else:
-		multDivIndex = min(multIndex, divIndex)
+	multDivIndex = getEarliestOperator(currCalcStr, "*", "/")
 
 	while multDivIndex != -1:
 		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, multDivIndex)
@@ -68,25 +60,10 @@ def calculateDebracketedExpression(calcStr):
 
 		currCalcStr = currCalcStr[:prevNumStartIndex] + str(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
-		multIndex = currCalcStr.find("*")
-		divIndex = currCalcStr.find("/")
-		if multIndex == -1:
-			multDivIndex = divIndex
-		elif divIndex == -1:
-			multDivIndex = multIndex
-		else:
-			multDivIndex = min(multIndex, divIndex)
+		multDivIndex = getEarliestOperator(currCalcStr, "*", "/")
 
 	# addition and subtraction
-	addSubIndex = -1
-	addIndex = currCalcStr.find("+")
-	subIndex = currCalcStr.find("-")
-	if addIndex == -1:
-		addSubIndex = subIndex
-	elif subIndex == -1:
-		addSubIndex = addIndex
-	else:
-		addSubIndex = min(addIndex, subIndex)
+	addSubIndex = getEarliestOperator(currCalcStr, "+", "-")
 
 	while addSubIndex != -1:
 		prevNumStartIndex, nextNumEndIndex = getPrevAndNextNumIndices(currCalcStr, addSubIndex)
@@ -100,16 +77,26 @@ def calculateDebracketedExpression(calcStr):
 
 		currCalcStr = currCalcStr[:prevNumStartIndex] + str(calculatedExpression) + currCalcStr[nextNumEndIndex + 1:]
 
-		addIndex = currCalcStr.find("+")
-		subIndex = currCalcStr.find("-")
-		if addIndex == -1:
-			addSubIndex = subIndex
-		elif subIndex == -1:
-			addSubIndex = addIndex
-		else:
-			addSubIndex = min(addIndex, subIndex)
+		addSubIndex = getEarliestOperator(currCalcStr, "+", "-")
 
 	return currCalcStr
+
+'''
+This function finds the earliest index of either of the two operators in the given string.
+Returns -1 if neither operator is found in the string.
+'''
+def getEarliestOperator(calcStr, operator1, operator2):
+	bothOpsIndex = -1
+	op1Index = calcStr.find(operator1)
+	op2Index = calcStr.find(operator2)
+	if op1Index == -1:
+		bothOpsIndex = op2Index
+	elif op2Index == -1:
+		bothOpsIndex = op1Index
+	else:
+		bothOpsIndex = min(op1Index, op2Index)
+
+	return bothOpsIndex
 
 def getPrevAndNextNumIndices(calcStr, operatorIndex):
 	prevNumStartIndex = operatorIndex - 1
