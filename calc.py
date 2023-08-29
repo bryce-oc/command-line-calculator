@@ -14,15 +14,14 @@ def calculateExpression(calcStr, preciseMode):
 	# following BIMDAS ordering, parse bracketed expressions first
 	currCalcStr = calcStr[:]
 	while "(" in currCalcStr:
-		startIndex = 0
-		endIndex = 0
+		startIndex = -1
+		endIndex = -1
 		i = 0
-		while i < len(currCalcStr):
+		while i < len(currCalcStr) and endIndex == -1:
 			if currCalcStr[i] == "(":
 				startIndex = i
 			elif currCalcStr[i] == ")":
 				endIndex = i
-				break
 			i += 1
 		insideBrackets = currCalcStr[startIndex + 1:endIndex]
 		bracketsResult = calculateDebracketedExpression(insideBrackets, preciseMode)
