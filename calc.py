@@ -25,10 +25,7 @@ def calculateExpression(calcStr, preciseMode):
 			i += 1
 		insideBrackets = currCalcStr[startIndex + 1:endIndex]
 		bracketsResult = calculateDebracketedExpression(insideBrackets, preciseMode)
-		#print(insideBrackets, "\t\t", bracketsResult)
 		currCalcStr = currCalcStr[:startIndex] + bracketsResult + currCalcStr[endIndex + 1:]
-
-	print("all brackets removed", flush=True)
 
 	# now that brackets are removed, parse remaining expression
 	currCalcStr = calculateDebracketedExpression(currCalcStr, preciseMode)
@@ -133,10 +130,6 @@ def getPrevAndNextNumIndices(calcStr, operatorIndex, preciseMode):
 		else:
 			nextNumEndIndex += 1
 	nextNumEndIndex -= 1
-
-	print(prevNumStartIndex, nextNumEndIndex)
-	print(calcStr)
-	print(calcStr[prevNumStartIndex:nextNumEndIndex+1])
 
 	return (prevNumStartIndex, nextNumEndIndex)
 
