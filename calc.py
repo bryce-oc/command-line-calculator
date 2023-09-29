@@ -105,7 +105,6 @@ This function finds the earliest index of either of the two operators in the giv
 Returns -1 if neither operator is found in the string.
 '''
 def getEarliestOperator(calcStr, operator1, operator2):
-	bothOpsIndex = -1
 	op1Index = calcStr.find(operator1)
 	op2Index = calcStr.find(operator2)
 	if op1Index == -1:
