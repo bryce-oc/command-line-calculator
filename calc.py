@@ -1,14 +1,17 @@
 from math import floor
 
+
 def calculateExpressionSafe(calcStr, preciseMode=True):
 	if checkValid(calcStr):
 		return calculateExpression(calcStr, preciseMode)
 	else:
 		return "Expression invalid."
 
+
 def checkValid(calcStr):
 	# TODO: implement checking
 	return True
+
 
 def calculateExpression(calcStr, preciseMode):
 	# following BIMDAS ordering, parse bracketed expressions first
@@ -34,6 +37,7 @@ def calculateExpression(calcStr, preciseMode):
 			return "-" + currCalcStr[1:]
 
 	return currCalcStr
+
 
 def calculateDebracketedExpression(calcStr, preciseMode):
 	currCalcStr = calcStr[:]
@@ -95,6 +99,7 @@ def calculateDebracketedExpression(calcStr, preciseMode):
 
 	return currCalcStr
 
+
 '''
 This function finds the earliest index of either of the two operators in the given string.
 Returns -1 if neither operator is found in the string.
@@ -111,6 +116,7 @@ def getEarliestOperator(calcStr, operator1, operator2):
 		bothOpsIndex = min(op1Index, op2Index)
 
 	return bothOpsIndex
+
 
 def getPrevAndNextNumIndices(calcStr, operatorIndex, preciseMode):
 	prevNumStartIndex = operatorIndex - 1
@@ -133,11 +139,13 @@ def getPrevAndNextNumIndices(calcStr, operatorIndex, preciseMode):
 
 	return (prevNumStartIndex, nextNumEndIndex)
 
+
 def convertNumToStr(num):
 	if num >= 0:
 		return str(num)
 	else:
 		return "n" + str(num * (-1))
+
 
 def convertStrToNum(string, preciseMode):
 	if preciseMode:
@@ -149,4 +157,4 @@ def convertStrToNum(string, preciseMode):
 		if string[0] == "n":
 			return float(string[1:]) * (-1)
 		else:
-			return float(string) 
+			return float(string)
